@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="main_title">SmsRemoteController!</string>
+	<string name="app_name">SmsRemoteController</string>
+	<string name="keyword_button_label">Set Keyword</string>
+	<string name="keyword_label">Keyword</string>
+	<string name="activity_label">Application</string>
+	<string name="exit">Done, get me out</string>
+	<string name="tryit">Try it now!</string>
+	<string name="help">
+		<b>>> How does it works:\n</b>
+				1.- Select an application from the list.\n
+				2.- Type a secret keyword.\n
+				3.- You are done. \nAny time you receive an sms message containing that keyword the selected application will be launched automatically.\n
+	
+	</string>
+	
+    <style name="helpText" >
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#FF909090</item>
+    </style>
+</resources>
