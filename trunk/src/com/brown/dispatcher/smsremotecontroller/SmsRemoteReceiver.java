@@ -1,58 +1,64 @@
 package com.brown.dispatcher.smsremotecontroller;
 
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
-import android.util.Log;
+import android.widget.Toast;
 
 public class SmsRemoteReceiver extends BroadcastReceiver implements SmsRemoteCommon {
 	private static final String TAG = "SmsRemoteReceiver";
 	private static SharedPreferences mSettings = null;
 
 	@Override
-	public void onReceive(final Context context, Intent intent) {
+	public void onReceive(Context context, Intent intent) {
 
+		mSettings = context.getSharedPreferences(PREFS_NAME, 0);
 		Bundle extras = intent.getExtras();
 		if (extras == null)
 			return;
+		
+		String smsBody = new String();
+		String action = intent.getAction();
+		
+		// Get real sms or dummy one to try the receiver
+		if (action.equals("SMS_RECEIVED")) {
+			Object[] pdus = (Object[]) extras.get("pdus");
+			
+			// We are only interested in array first object (sms)
+			SmsMessage message = SmsMessage.createFromPdu((byte[]) pdus[0]);
+			smsBody = message.getMessageBody();
+			
+		} else if (action.equals("TRYIT")) {
+			smsBody = extras.getString("fakeSms");
+		}
 
-		mSettings = context.getSharedPreferences(PREFS_NAME, 0);
-
-		Object[] pdus = (Object[]) extras.get("pdus");
-		// Only interested in first sms of the array
-		SmsMessage message = SmsMessage.createFromPdu((byte[]) pdus[0]);
-		String smsBody = message.getMessageBody();
-
+		
 		if (isKeywordInSms(smsBody)) {
 			String packageName = mSettings.getString(PACKAGENAME, null);
 			String className = mSettings.getString(CLASSNAME, null);
 			
-			// Send intent to mActivityName class
 			Intent di = new Intent();
 			di.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			di.putExtra("smsBody", smsBody);
 			di.setClassName(packageName, packageName + "." + className);
 			
 			try {
 				context.startActivity(di);	
 				
 			} catch (RuntimeException e) {
-				Log.e(TAG, "Clase no encontrada: "+e.getMessage());
-				AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(context);
-		        dlgAlert.setMessage("This is an alert with no consequence");
-		        dlgAlert.setTitle("App Title");
-		        dlgAlert.setPositiveButton("OK", null);
-		        dlgAlert.setCancelable(true);
-		        dlgAlert.create().show();
-				
+				CharSequence text = "SmsRemoteController error:\nApplication "+className+" cannot be found.";
+				int duration = Toast.LENGTH_SHORT;
+				Toast toast = Toast.makeText(context, text, duration);
+				toast.show();
 			}
 		}
 	}
 	
 	
+
 
 	/**
 	 * Check user secret keyword in sms body
