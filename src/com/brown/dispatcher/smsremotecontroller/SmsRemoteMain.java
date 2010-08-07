@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.telephony.SmsManager;
-import android.telephony.SmsMessage;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -26,7 +21,6 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 		//Load preferences
 		mSettings = getSharedPreferences(PREFS_NAME, 0);
 		
-		
 		//Register view listeners
 		ArrayList<Integer> views = new ArrayList<Integer>();
 		views.add(R.id.keyword_label);
@@ -36,7 +30,6 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 		views.add(R.id.exit);
 		views.add(R.id.tryit);
 		registerListeners(views);
-
 		
 		//Set classname & keyword info
 		fillData();
@@ -49,21 +42,6 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 			View view = findViewById((Integer)it.next());
 			view.setOnClickListener(this);
 		}
-		
-	}
-
-	private void fillData() {
-		//String packageName = mSettings.getString(PACKAGENAME, null);
-		
-		TextView classname = (TextView)findViewById(R.id.activityName);
-		classname.setText(mSettings.getString(CLASSNAME, null));
-		
-		//EditText keyword = (EditText)findViewById(R.id.keyword_edit);
-		//keyword.setText(mSettings.getString(KEYWORD, null));
-		
-		TextView keywordV = (TextView)findViewById(R.id.keyword);
-		keywordV.setText(mSettings.getString(KEYWORD, null));
-		
 	}
 
 	public void onClick(View v) {
@@ -85,33 +63,37 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 		}
 	}
 	
-
+	
+	/**
+	 * Send broadcast message to SmsRemoteReceiver to try keyword recognition and application launching.
+	 */
 	private void tryit() {
-		String packageName = mSettings.getString(PACKAGENAME, null);
-		String className = mSettings.getString(CLASSNAME, null);
-		
-		// Send intent to mActivityName class
-		Intent di = new Intent();
-		di.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		di.setClassName(packageName, packageName + "." + className);
-		try {
-			this.startActivity(di);	
-			
-		} catch (RuntimeException e) {
-			AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-	        dlgAlert.setMessage("Ooops! Application "+className+" cannot be launched. Maybe uninstalled?");
-	        dlgAlert.setTitle("Error");
-	        dlgAlert.setPositiveButton("OK", null);
-	        dlgAlert.setCancelable(true);
-	        dlgAlert.create().show();
-			
-		}
+		Intent di = new Intent(this, SmsRemoteReceiver.class);
+		di.setAction("TRYIT");
+		di.putExtra("fakeSms", "This is a fake sms to try broadcastreceiver. Keyword is "+ mSettings.getString(KEYWORD, null));
+		sendBroadcast(di);
 	}
 		
 	
-		
+	/** 
+	 * Every time we came back the view needs to be filled with new data.	
+	 */
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         fillData();
     }
+	
+	/**
+	 * Populate main view form.
+	 * This is called everytime view needs to be reloaded.
+	 * Data is obtained from SharedPreferences.
+	 */
+	private void fillData() {
+		TextView classname = (TextView)findViewById(R.id.activityName);
+		classname.setText(mSettings.getString(CLASSNAME, null));
+		
+		TextView keywordV = (TextView)findViewById(R.id.keyword);
+		keywordV.setText(mSettings.getString(KEYWORD, null));
+		
+	}
 }
