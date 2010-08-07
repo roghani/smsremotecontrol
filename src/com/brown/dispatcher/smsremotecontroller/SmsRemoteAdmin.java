@@ -29,61 +29,56 @@ public class SmsRemoteAdmin extends ListActivity implements SmsRemoteCommon {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.main);
-		// mDbHelper = new SmsRemoteDbAdapter(this);
-		// mDbHelper.open();
-
 		
 		// Restore preferences
 		mSettings = getSharedPreferences(PREFS_NAME, 0);
-		String className = mSettings.getString(CLASSNAME, null);
-		String packageName = mSettings.getString(PACKAGENAME, null);
+		//String className = mSettings.getString(CLASSNAME, null);
+		//String packageName = mSettings.getString(PACKAGENAME, null);
 		
 		
-		Log.e(TAG, "Restoring settings "+packageName+" - "+className);
+		//Log.e(TAG, "Restoring settings "+packageName+" - "+className);
 		
-		selectActivity(className, packageName);
+		//selectActivity(className, packageName);
 
 		fillActivities();
 		registerForContextMenu(getListView());
 
 	}
 
+	/**
+	 * Build activities list
+	 */
 	private void fillActivities() {
 
-		// Get ACTION_MAIN ables applications
+		// Get ACTION_MAIN applications
 		final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
 		mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-		final List<ResolveInfo> pkgAppsList = getPackageManager()
-				.queryIntentActivities(mainIntent, 0);
+		final List<ResolveInfo> pkgAppsList = getPackageManager().queryIntentActivities(mainIntent, 0);
 
-		// Extract app name and populate arraylist with it.
+		// We need an array with package and class name of each activity
 		appNameList = new ArrayList<HashMap<String, String>>();
+		
+		// Iterate over application list from PackageManager and get class and package names
 		Iterator<ResolveInfo> it = pkgAppsList.iterator();
 		while (it.hasNext()) {
 			HashMap<String, String> map = new HashMap<String, String>();
-
 			ActivityInfo activityInfo = ((ResolveInfo) it.next()).activityInfo;
-			String activityPackgeName = activityInfo.name.substring(0,
-					activityInfo.name.lastIndexOf("."));
-			String activityClassName = activityInfo.name.substring(
-					activityInfo.name.lastIndexOf(".") + 1, activityInfo.name
-							.length());
-			
+
+			String activityPackgeName = activityInfo.name.substring(0, activityInfo.name.lastIndexOf("."));
+			String activityClassName = activityInfo.name.substring(activityInfo.name.lastIndexOf(".") + 1, activityInfo.name.length());
 			
 			map.put(PACKAGENAME, activityPackgeName);
 			map.put(CLASSNAME, activityClassName);
 			appNameList.add(map);
+			
 			it.next();
 		}
 
 		// Create an array to specify the fields we want to display in the list
-		// (only TITLE)
-		String[] from = new String[] { PACKAGENAME, CLASSNAME, CLASSNAME };
+		String[] from = new String[] { PACKAGENAME, CLASSNAME};
 
-		// and an array of the fields we want to bind those fields to (in this
-		// case just text1)
-		int[] to = new int[] { R.id.packagename, R.id.classname, R.id.testest };
+		// and an array of the fields we want to bind those fields to
+		int[] to = new int[] { R.id.packagename, R.id.classname};
 
 		// Build list
 		SimpleAdapter clasess = new SimpleAdapter(this, appNameList, R.layout.activitylist, from, to);
@@ -96,25 +91,14 @@ public class SmsRemoteAdmin extends ListActivity implements SmsRemoteCommon {
 	protected void onListItemClick(ListView l, View v, int position, long idx) {
 		super.onListItemClick(l, v, position, idx);
 
-		int id = (int) idx;
+		String className = (String) ((HashMap) appNameList.get((int)idx)).get(CLASSNAME);
+		String packageName = (String) ((HashMap) appNameList.get((int)idx)).get(PACKAGENAME);
 		
-		String className = mSettings.getString(CLASSNAME, null);
-		String packageName = mSettings.getString(PACKAGENAME, null);
-		
-		
-		className = (String) ((HashMap) appNameList.get(id)).get(CLASSNAME);
-		packageName = (String) ((HashMap) appNameList.get(id)).get(PACKAGENAME);
+		// Store package and class names in SharedPreferences
 		selectActivity(className, packageName);
-		
-		className = mSettings.getString(CLASSNAME, null);
-		packageName = mSettings.getString(PACKAGENAME, null);
-		
 		
 		setResult(RESULT_OK);
 		finish();
-		// Intent i = new Intent(this, NoteEdit.class);
-		// i.putExtra(NotesDbAdapter.KEY_ROWID, id);
-		// startActivityForResult(i, ACTIVITY_EDIT);
 	}
 
 	private void selectActivity(String className, String packageName) {
