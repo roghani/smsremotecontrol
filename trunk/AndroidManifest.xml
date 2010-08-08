@@ -3,15 +3,16 @@
 	package="com.brown.dispatcher.smsremotecontroller" android:versionCode="1"
 	android:versionName="1.0">
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
-		<activity android:name=".SmsRemoteAdmin" android:label="@string/app_name">
-			
-		</activity>
-		
 		<activity android:name=".SmsRemoteMain" android:label="@string/app_name">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
+		</activity>
+
+		<activity android:name=".SmsRemoteHowto"
+			android:theme="@android:style/Theme.Dialog" 
+			android:label="@string/howto_title">
 		</activity>
 
 		<receiver android:name=".SmsRemoteReceiver">
@@ -21,8 +22,7 @@
 			</intent-filter>
 		</receiver>
 		
-		<activity android:name=".SmsRemoteKeywordEdit" android:label="@string/app_name">
-		</activity>
+		
 
 	</application>
 	<uses-permission android:name="android.permission.RECEIVE_SMS">
