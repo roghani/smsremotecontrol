@@ -3,10 +3,14 @@
 	<string name="main_title">SmsRemoteController!</string>
 	<string name="app_name">SmsRemoteController</string>
 	<string name="keyword_button_label">Set Keyword</string>
-	<string name="keyword_label">Keyword</string>
-	<string name="activity_label">Application</string>
+	<string name="keyword_label">Please enter a trigger keyword</string>
+	<string name="activity_label">Please select an application</string>
 	<string name="exit">Done, get me out</string>
 	<string name="tryit">Try it now!</string>
+	<string name="validationFail">Please enter both Application and Keyword.\nFor more information read HowTo section.</string>
+	<string name="activity_prompt">Choose an application</string>
+		<string name="keywordDefault">Enter keyword</string>
+		<string name="about">How does this works</string>
 	<string name="help">
 		<b>>> How does it works:\n</b>
 				1.- Select an application from the list.\n
