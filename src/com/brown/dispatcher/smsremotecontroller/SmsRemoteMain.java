@@ -1,10 +1,17 @@
 package com.brown.dispatcher.smsremotecontroller;
 
+/**
+ * @author lgzvalle@gmail.com
+ * Project site: https://code.google.com/p/smsremotecontrol/
+ * Code license: Apache 2.0
+ */
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -26,7 +33,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemoteCommon {
 	private static SharedPreferences mSettings;
-	ArrayList<String> appPackageArray;
+	private ArrayList<String> appPackageArray;
 	private ArrayList<String> appNameArray;
 	
 	public void onCreate (Bundle savedInstanceState) {
@@ -52,10 +59,14 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 	
 	private class KeywordWatcherListener implements TextWatcher {
 
-		@Override
+		/**
+		 * After every type on keyword EditView we store the value. 
+		 */
 		public void afterTextChanged(Editable s) {
 			String keyword = s.toString();
 			SharedPreferences.Editor editor = mSettings.edit();
+			
+			//If empty save KEYWORD as 'null' for validation purposes
 			editor.putString(KEYWORD, keyword.equals("")?null:keyword);
 			editor.commit();
 			
@@ -106,16 +117,19 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 	    	if (validateForm()) {
 	    		finish();
 	    	}
-	    	
 	        return true;
+	        
 	    case R.id.tryit:
 	    	if (validateForm()) {
 	    		tryit();
 	    	}
-	        
 	        return true;
+	        
 	    case R.id.about:
+	    	Intent in = new Intent(this, SmsRemoteHowto.class);
+	    	startActivity(in);
 	    	return true;
+	    	
 	    default:
 	        return super.onOptionsItemSelected(item);
 	    }
@@ -124,7 +138,7 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 	private boolean validateForm() {
 		if (mSettings.getString(CLASSNAME, null) == null ||
 				mSettings.getString(KEYWORD, null) == null) {
-			Toast.makeText(this, R.string.validationFail, Toast.LENGTH_LONG).show();
+			Toast.makeText(this, this.getString(R.string.validationFail), Toast.LENGTH_LONG).show();
 			return false;
 		}
 		return true;
@@ -164,23 +178,36 @@ public class SmsRemoteMain extends Activity implements OnClickListener, SmsRemot
 
 	}
 
-
-	
-	
 	/**
 	 * Send broadcast message to SmsRemoteReceiver to try keyword recognition and application launching.
 	 */
 	private void tryit() {
+		final String smsBody = this.getString(R.string.dummy_sms) + mSettings.getString(KEYWORD, null);
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage("- Activity to launch: "+mSettings.getString(CLASSNAME, null) + "\n\n- SMS message to forward: \""+smsBody+"\"")
+		       .setCancelable(false)
+		       .setTitle("Sending dummy sms to BroadcastReceiver")
+		       .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		        		sendBroadcastSMS(smsBody);
+		           }
+		       
+		       });
+	       
+		AlertDialog alert = builder.create();
+		alert.show();
+	}
+	
+	private void sendBroadcastSMS(String body) {
 		Intent di = new Intent(this, SmsRemoteReceiver.class);
-		di.setAction("TRYIT");
-		di.putExtra("fakeSms", "This is a fake sms to try broadcastreceiver. Keyword is "+ mSettings.getString(KEYWORD, null));
+		di.setAction(TRY_IT);
+		di.putExtra(DUMMY_SMS, body);
 		sendBroadcast(di);
 	}
-		
 	
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		
+		//Do nothing
 	}
 }
